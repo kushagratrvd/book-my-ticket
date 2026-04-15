@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authenticate - ChaiCode Cinema</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap");
+    body {
+      font-family: "Outfit", sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .hidden-form { display: none; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-200">
+  <div class="min-h-screen flex">
+    
+    <!-- Left Side -->
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-800 to-slate-950 p-8 xl:p-12 flex-col justify-center items-center relative overflow-hidden border-r border-slate-700/50">
+      <div class="relative z-10 text-center space-y-6">
+        <h1 class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-4 tracking-tight">
+          ChaiCode Cinema
+        </h1>
+        <p class="text-lg xl:text-xl text-slate-400 max-w-md mx-auto">
+          Book your tickets for the best seats in the house. Experience the magic of cinema like never before.
+        </p>
+        <button onclick="window.location.href='/'" class="bg-slate-800 border border-slate-600 hover:bg-slate-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg mt-8">
+          View Now Showing
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Side -->
+    <div class="w-full lg:w-1/2 bg-slate-900 flex items-center justify-center p-8 lg:p-6">
+      <div class="w-full max-w-md">
+        
+        <div class="text-center mb-10">
+          <div class="lg:hidden mb-6">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">ChaiCode Cinema</h1>
+          </div>
+          <h2 id="auth-title" class="text-4xl font-bold text-white mb-3">Welcome Back</h2>
+          <p id="auth-subtitle" class="text-slate-400 text-lg">Sign in to access your bookings and reserve your favourite seats.</p>
+        </div>
+
+        <form id="login-form" class="space-y-5" onsubmit="handleAuth(event, 'login')">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-300">Email Address</label>
+            <input type="email" required class="w-full h-14 bg-slate-800/50 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-4 text-white outline-none transition-all placeholder:text-slate-500" placeholder="Enter your email" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-300">Password</label>
+            <input type="password" required class="w-full h-14 bg-slate-800/50 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-4 text-white outline-none transition-all placeholder:text-slate-500" placeholder="Enter your password" />
+          </div>
+          <button type="submit" class="w-full h-14 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold text-lg rounded-xl transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 mt-4">
+            Sign In
+          </button>
+        </form>
+
+        <form id="signup-form" class="space-y-5 hidden-form" onsubmit="handleAuth(event, 'register')">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-300">Full Name</label>
+            <input type="text" required class="w-full h-12 bg-slate-800/50 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-4 text-white outline-none transition-all placeholder:text-slate-500" placeholder="Enter your name" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-300">Email Address</label>
+            <input type="email" required class="w-full h-12 bg-slate-800/50 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-4 text-white outline-none transition-all placeholder:text-slate-500" placeholder="Enter your email" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-300">Password</label>
+            <input type="password" required class="w-full h-12 bg-slate-800/50 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-4 text-white outline-none transition-all placeholder:text-slate-500" placeholder="Create a password" />
+          </div>
+          <button type="submit" class="w-full h-14 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold text-lg rounded-xl transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 mt-4">
+            Create Account
+          </button>
+        </form>
+
+        <!-- Toggle -->
+        <div class="mt-8 text-center">
+          <p class="text-slate-400">
+            <span id="toggle-text">Don't have an account yet?</span>
+            <button onclick="toggleMode()" id="toggle-btn" class="text-emerald-400 hover:text-emerald-300 font-bold transition-colors ml-1 hover:underline underline-offset-4">
+              Join the Cinema
+            </button>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isLogin = true;
+
+    function toggleMode() {
+      isLogin = !isLogin;
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const title = document.getElementById('auth-title');
+      const subtitle = document.getElementById('auth-subtitle');
+      const toggleText = document.getElementById('toggle-text');
+      const toggleBtn = document.getElementById('toggle-btn');
+
+      if (isLogin) {
+        loginForm.classList.remove('hidden-form');
+        signupForm.classList.add('hidden-form');
+        title.innerText = "Welcome Back";
+        subtitle.innerText = "Sign in to access your bookings and reserve your favourite seats.";
+        toggleText.innerText = "Don't have an account yet?";
+        toggleBtn.innerText = "Join the Cinema";
+      } else {
+        loginForm.classList.add('hidden-form');
+        signupForm.classList.remove('hidden-form');
+        title.innerText = "Grab Your Ticket";
+        subtitle.innerText = "Create your account and start booking your favorite movie seats today.";
+        toggleText.innerText = "Already have an account?";
+        toggleBtn.innerText = "Sign In Instead";
+      }
+    }
+
+    async function handleAuth(e, type) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const inputs = form.querySelectorAll('input');
+      let bodyData = {};
+      
+      if (type === 'login') {
+        bodyData = {
+          email: inputs[0].value,
+          password: inputs[1].value,
+        };
+      } else {
+        bodyData = {
+          name: inputs[0].value,
+          email: inputs[1].value,
+          password: inputs[2].value
+        };
+      }
+
+      try {
+        const response = await fetch(`/api/auth/${type}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(bodyData)
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success !== false) {
+           if (type === 'login') {
+             alert('Login successful!');
+             if (data.data && data.data.accessToken) {
+               localStorage.setItem('accessToken', data.data.accessToken);
+             }
+             window.location.href = '/';
+           } else {
+             alert('Registration successful! Please sign in.');
+             toggleMode();
+           }
+        } else {
+           alert("Error: " + (data.message || (data.errors && data.errors[0]?.message) || 'Failed'));
+        }
+      } catch (err) {
+         alert("Network error: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

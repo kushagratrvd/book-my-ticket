@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS seats;
+CREATE TABLE seats (
+  id SERIAL PRIMARY KEY,
+  user_id INT,
+  ticket_id INT,
+  name VARCHAR(100),
+  isbooked INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (ticket_id) REFERENCES tickets(id)
+);

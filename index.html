@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stellar Seat Booking</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap");
@@ -30,7 +31,11 @@
             <span class="font-bold">Dhurandhar The Revenge</span>
           </span>
         </h1>
-        <p class="text-slate-400 text-lg">Jassi ko ghar ki yaad kyu nhi aai?</p>
+        <p class="text-slate-400 text-lg mb-6">Jassi ko ghar ki yaad kyu nhi aai?</p>
+        
+        <a id="auth-btn" href="/auth" class="inline-block bg-slate-800 hover:bg-slate-700 border border-slate-600 text-emerald-400 font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 shadow-md">
+          Sign In / Register
+        </a>
       </div>
 
       <div class="flex justify-center mb-10">
@@ -69,10 +74,47 @@
 
     <script>
       async function run() {
+        const authBtn = document.getElementById("auth-btn");
+        const token = localStorage.getItem("accessToken");
+        
+        if (token) {
+          authBtn.innerText = "Logout";
+          authBtn.href = "#";
+          authBtn.className = "inline-block bg-slate-800 hover:bg-rose-900 border border-slate-600 hover:border-rose-700 text-rose-400 hover:text-rose-100 font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 shadow-md";
+          authBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            localStorage.removeItem("accessToken");
+            try {
+               await fetch('/api/auth/logout', { 
+                   method: 'POST', 
+                   headers: { 'Authorization': `Bearer ${token}` }
+               });
+            } catch(ex) {}
+            window.location.reload();
+          });
+        }
+
         const tbl = document.getElementById("tbl");
+        
+        // skeleton 
+        tbl.innerHTML = '';
+        for (let r = 0; r < 5; r++) {
+            let tr = document.createElement("tr");
+            for (let c = 0; c < 8; c++) {
+                let td = document.createElement("td");
+                td.className = "w-32 h-32 rounded-2xl bg-slate-800/60 animate-pulse border border-slate-700/50";
+                tr.appendChild(td);
+            }
+            tbl.appendChild(tr);
+        }
+
         const res = await fetch("/seats");
+        if(!res) console.log("error in fetching seats");
         const resarray = await res.json();
-        const j = resarray.sort((a, b) => a.id - b.id);
+        const j = resarray.data.sort((a, b) => a.id - b.id);
+        
+        // Clear skeleton 
+        tbl.innerHTML = '';
         let tr;
         for (let i = 0; i < j.length; i++) {
           if (i % 8 === 0) tr = document.createElement("tr");
@@ -106,14 +148,27 @@
 
             try {
               const id = j[i].id; // Safe from loop closure
-              const name = prompt("Enter your name");
-              if (!name) return;
+              
+              const token = localStorage.getItem('accessToken');
+              if(!token) {
+                alert("Please login first to book a ticket.");
+                window.location.href = '/auth';
+                return;
+              }
 
-              const res = await fetch(`/${id}/${name}`, { method: "PUT" });
+              const isConfirmed = confirm(`Are you sure you want to book Seat ${id}?`);
+              if (!isConfirmed) return;
+
+              const res = await fetch(`/${id}`, { 
+                  method: "PUT",
+                  headers: {
+                      'Authorization': `Bearer ${token}`
+                  }
+              });
               const data = await res.json();
 
-              if (data.error) {
-                alert("FAILED! Couldn't book! already booked.");
+              if (!res.ok || data.success === false) {
+                alert("FAILED! " + (data.message || "Couldn't book! already booked."));
               } else {
                 alert("Booked successfully!");
                 // Visually transition to booked state upon success
@@ -121,7 +176,7 @@
                 currentTd.innerHTML = `
                             <span class="relative z-10">${id}</span>
                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-slate-900 border border-slate-700 text-sm text-slate-300 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap shadow-2xl z-50 pointer-events-none font-normal shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
-                                Booked by: <span class="font-bold text-white ml-1">${name}</span>
+                                Booked by: <span class="font-bold text-white ml-1">${data.data.name}</span>
                                 <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-[6px] border-transparent border-t-slate-700"></div>
                                 <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[2px] border-[5px] border-transparent border-t-slate-900"></div>
                             </div>
